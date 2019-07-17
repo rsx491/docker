@@ -1,0 +1,45 @@
+version: '3.3'
+
+services:
+  drupal:
+    image: drupal:latest
+    build:
+        context: ./
+        dockerfile: Dockerfile-drupal
+    ports:
+      - 80:80
+    volumes:
+      - type: volume
+        source: drupal_data
+        target: /var/www/html
+
+  # db:
+  #   image: mysql/mysql-server:latest
+  #   command: "--default-authentication-plugin=mysql_native_password"
+  #   container_name: mysql-container
+  #   volumes:
+  #     - ./sql:/docker-entrypoint-initdb.d
+  #   environment:
+  #     MYSQL_ROOT_PASSWORD: 
+  #     MYSQL_DATABASE: welk_sprint1
+  #     MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+
+  db:
+    image: mysql/mysql-server:latest
+    command: ["/etc/init.d/start_mysql.sh"]
+    container_name: mysql-container
+    environment:
+      MYSQL_ROOT_PASSWORD:
+      MYSQL_DATABASE: "welk_sprint1"
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'true'
+    build:
+      context: ./
+      dockerfile: Dockerfile-mysql
+    # volumes:
+    #     - type: volume
+    #       source: db_data
+    #       target: /var/lib/mysql
+
+
+volumes:
+  drupal_data:

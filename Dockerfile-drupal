@@ -1,0 +1,43 @@
+FROM drupal:latest
+
+ARG id_rsa
+ARG id_rsa_pub
+ARG git_path
+ARG git_branch
+
+
+WORKDIR /var/www
+RUN rm -rf html_default && mv html html_default && \
+	mkdir -p /var/www/html && \
+	chown -R www-data.www-data /var/www/html && \
+	apt-get update && apt-get install -y git curl wget nano openssh-server && \
+	apt-get install -y zip && \
+	mkdir -p /root/.ssh && \
+	ssh-keyscan github.com > /root/.ssh/known_hosts
+
+#RUN	echo "$id_rsa" > /root/.ssh/id_rsa && \
+#	echo "$id_rsa_pub" > /root/.ssh/id_rsa.pub && \
+
+COPY $id_rsa /root/.ssh/id_rsa
+COPY $id_rsa_pub /root/.ssh/id_rsa.pub
+
+RUN	chmod 600 /root/.ssh/id_rsa && \
+	chmod 600 /root/.ssh/id_rsa.pub
+
+
+WORKDIR /var/www/html
+RUN echo "GIT $git_path / $git_branch " && \
+	git init && git remote add origin "$git_path" && \
+	git fetch --all --prune && git reset --hard origin/"$git_branch" && \
+	git pull origin "$git_branch" && \
+	chown -R www-data.www-data /var/www/html 
+
+WORKDIR /root/
+RUN curl -sS https://getcomposer.org/installer | php
+RUN mv composer.phar /usr/local/bin/composer && wget https://github.com/drush-ops/drush/releases/download/8.0.1/drush.phar && chmod +x drush.phar && mv drush.phar /usr/local/bin/drush
+
+WORKDIR /var/www/html
+RUN drush init && composer install && chown -R www-data.www-data /var/www/html 
+
+#change db host to use docker network
+RUN sed -i "s/host' => 'localhost/host' => 'db/" /var/www/html/sites/default/settings.php

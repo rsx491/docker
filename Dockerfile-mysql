@@ -1,0 +1,25 @@
+FROM mysql:latest
+
+ARG id_rsa
+ARG id_rsa_pub
+ARG git_path
+ARG git_branch
+
+COPY start_mysql.sh /etc/init.d/start_mysql.sh
+
+RUN chmod +x /etc/init.d/start_mysql.sh && \
+	mkdir -p /root/drupal && \
+	apt-get update && apt-get install -y git curl wget nano openssh-server && \
+	mkdir -p /root/.ssh && \
+	ssh-keyscan github.com > /root/.ssh/known_hosts
+
+COPY $id_rsa /root/.ssh/id_rsa
+COPY $id_rsa_pub /root/.ssh/id_rsa.pub
+RUN	chmod 600 /root/.ssh/id_rsa && \
+	chmod 600 /root/.ssh/id_rsa.pub
+
+WORKDIR /root/drupal
+RUN git init && git remote add origin "$git_path" && \
+	git fetch --all --prune && \
+	git checkout "origin/$git_branch" -- install.sql
+

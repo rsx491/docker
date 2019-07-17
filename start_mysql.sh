@@ -15,7 +15,7 @@ command="mysqladmin -u root status"
 echo "Starting mysql container.. "
 
 # Create a basic mysql install
-if [ ! -d /var/lib/mysql/mysql ]; then
+if [ ! "$(ls -A /var/lib/mysql)" ]; then
   echo "**** No MySQL data found. Creating data on /var/lib/mysql/ ****"
   mkdir -p /var/lib/mysql
   rm -rf /var/lib/mysql/*
@@ -47,7 +47,7 @@ if [ $ret_value -eq 0 ]; then
 		#mysql -u root -e "ALTER USER 'root' IDENTIFIED WITH mysql_native_password BY '';"
 		mv /root/drupal/install.sql /root/install.sql
 	fi
-	mysql -u root -e "CREATE USER 'root'@'%' IDENTIFIED BY ''";
+	mysql -u root -e "CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED BY ''";
 	mysql -u root -e "GRANT ALL PRIVILEGES ON *.* to 'root'@'%' WITH GRANT OPTION";
 fi
 

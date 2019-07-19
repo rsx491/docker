@@ -27,13 +27,42 @@ if [ "$CMD" == "build" ];then
 		rm -f ./$BASERSA
 		rm ./$BASEPUB
 		docker-compose up -d db
-		docker-compose up -d drupal
+		counter=0
+		until [[ $(docker-compose logs db) =~ "Attaching to foreground" ]]
+		do
+			echo "Waiting for db to finish.. "
+			((counter++))
+			if [ $counter -eq 15 ]; then
+				echo "Reached max limit waiting for db, stopping"
+				break
+			fi
+			sleep 20
+		done
+		if [ $counter < 15 ]; then
+			echo "Starting drupal container.."
+			docker-compose up -d drupal
+		fi
 	else
 		echo "In order to build the ssh files and git path must be provided"
 		exit 1
 	fi
 elif [ "$CMD" == "run" ];then
-	docker-compose run
+	docker-compose up -d db
+	counter=0
+	until [[ $(docker-compose logs db) =~ "Attaching to foreground" ]]
+	do
+		echo "Waiting for db to finish.. "
+		((counter++))
+		if [ $counter < 15 ]; then
+			echo "Reached max limit waiting for db, stopping"
+			break
+		fi
+		sleep 20
+	done
+	if [ $counter -lt 15 ]; then
+		echo "Starting drupal container.."
+		docker-compose up -d drupal
+	fi
 else
 	echo "Unsupported command"
 	exit 1

@@ -32,13 +32,13 @@ if [ "$CMD" == "build" ];then
 		do
 			echo "Waiting for db to finish.. "
 			((counter++))
-			if [ $counter -eq 15 ]; then
+			if [ "$counter" -eq "15" ]; then
 				echo "Reached max limit waiting for db, stopping"
 				break
 			fi
 			sleep 20
 		done
-		if [ $counter < 15 ]; then
+		if [ "$counter" -lt "15" ]; then
 			echo "Starting drupal container.."
 			docker-compose up -d drupal
 		fi
@@ -53,13 +53,13 @@ elif [ "$CMD" == "run" ];then
 	do
 		echo "Waiting for db to finish.. "
 		((counter++))
-		if [ $counter < 15 ]; then
+		if [ "$counter" -lt "15" ]; then
 			echo "Reached max limit waiting for db, stopping"
 			break
 		fi
 		sleep 20
 	done
-	if [ $counter -lt 15 ]; then
+	if [ "$counter" -lt "15" ]; then
 		echo "Starting drupal container.."
 		docker-compose up -d drupal
 	fi

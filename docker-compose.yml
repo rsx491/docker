@@ -6,12 +6,19 @@ services:
     build:
         context: ./
         dockerfile: Dockerfile-drupal
+        args:
+           id_rsa: id_ed25519
+           id_rsa_pub: id_ed25519.pub
+           git_path: git@github.com:rsx491/welkresorts.git
+           git_branch: master
     ports:
       - 80:80
     volumes:
       - type: volume
         source: drupal_data
         target: /var/www/html
+    depends_on:
+      - db
 
   # db:
   #   image: mysql/mysql-server:latest
@@ -35,6 +42,11 @@ services:
     build:
       context: ./
       dockerfile: Dockerfile-mysql
+      args:
+         id_rsa: id_ed25519
+         id_rsa_pub: id_ed25519.pub
+         git_path: git@github.com:rsx491/welkresorts.git
+         git_branch: master
     # volumes:
     #     - type: volume
     #       source: db_data
